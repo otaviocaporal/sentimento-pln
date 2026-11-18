@@ -1,6 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from src.avaliacao import avaliar_modelos
+
 # dataset
 dados = pd.read_csv("data/avaliacoes.csv")
 
@@ -111,3 +113,8 @@ with open("resultados/exploracao.txt", "w", encoding="utf-8") as arquivo:
         arquivo.write(f"{linha['texto']}\n")
 
 print("\nArquivo exploracao.txt salvo.")
+
+# comparacao dos modelos
+print("\nComparação dos modelos:")
+
+tabela, X_treino, X_teste, y_treino, y_teste, melhor = avaliar_modelos(dados)
