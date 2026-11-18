@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from src.avaliacao import avaliar_modelos
-
+from src.avaliacao import (avaliar_modelos, avaliar_modelo_final, avaliar_casos_dificeis)
 # dataset
 dados = pd.read_csv("data/avaliacoes.csv")
 
@@ -118,3 +118,15 @@ print("\nArquivo exploracao.txt salvo.")
 print("\nComparação dos modelos:")
 
 tabela, X_treino, X_teste, y_treino, y_teste, melhor = avaliar_modelos(dados)
+
+# avaliacao final do melhor modelo
+modelo_final = avaliar_modelo_final(
+    X_treino,
+    X_teste,
+    y_treino,
+    y_teste,
+    melhor
+)
+
+# avaliacao dos casos dificeis
+avaliar_casos_dificeis(modelo_final)

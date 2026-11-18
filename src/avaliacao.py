@@ -111,3 +111,137 @@ def avaliar_modelos(dados):
     print(tabela)
 
     return tabela, X_treino, X_teste, y_treino, y_teste, melhor
+
+
+from sklearn.metrics import confusion_matrix, classification_report
+from src.modelos import criar_modelo
+
+
+def avaliar_modelo_final(X_treino, X_teste, y_treino, y_teste, melhor):
+
+    configuracoes = {
+        "A": (False, "bow"),
+        "B": (False, "tfidf"),
+        "C": (True, "bow"),
+        "D": (True, "tfidf")
+    }
+
+    remover_stopwords, tipo = configuracoes[melhor["config"]]
+
+    modelo = criar_modelo(remover_stopwords, tipo)
+
+    # treinar usando todo o conjunto de treinamento
+    modelo.fit(X_treino, y_treino)
+
+    # previsoes no teste
+    previsoes = modelo.predict(X_teste)
+    probabilidades = modelo.predict_proba(X_teste)
+
+    indice_positivo = list(modelo.classes_).index("positivo")
+    prob_positivo = probabilidades[:, indice_positivo]
+
+    os.makedirs("resultados", exist_ok=True)
+
+    # matriz de confusao
+    matriz = confusion_matrix(
+        y_teste,
+        previsoes,
+        labels=["negativo", "positivo"]
+    )
+
+    pd.DataFrame(
+        matriz,
+        index=["real_negativo", "real_positivo"],
+        columns=["previsto_negativo", "previsto_positivo"]
+    ).to_csv("resultados/matriz_confusao.csv")
+
+    # relatorio de classificacao
+    relatorio = classification_report(
+        y_teste,
+        previsoes,
+        labels=["negativo", "positivo"],
+        zero_division=0
+    )
+
+    with open("resultados/relatorio_classificacao.txt", "w", encoding="utf-8") as arquivo:
+        arquivo.write(relatorio)
+
+    # registrar erros
+    erros = pd.DataFrame({
+        "texto": X_teste.values,
+        "real": y_teste.values,
+        "previsto": previsoes,
+        "probabilidade": prob_positivo
+    })
+
+    erros = erros[erros["real"] != erros["previsto"]]
+    erros.to_csv("resultados/erros.csv", index=False, encoding="utf-8-sig")
+
+    # palavras influentes
+    vetorizador = modelo.named_steps["vetorizador"]
+    classificador = modelo.named_steps["classificador"]
+
+    palavras = vetorizador.get_feature_names_out()
+    coeficientes = classificador.coef_[0]
+
+    indices_positivos = coeficientes.argsort()[-10:][::-1]
+    indices_negativos = coeficientes.argsort()[:10]
+
+    influentes = []
+
+    for indice in indices_positivos:
+        influentes.append({
+            "palavra": palavras[indice],
+            "classe": "positivo",
+            "coeficiente": coeficientes[indice]
+        })
+
+    for indice in indices_negativos:
+        influentes.append({
+            "palavra": palavras[indice],
+            "classe": "negativo",
+            "coeficiente": coeficientes[indice]
+        })
+
+    pd.DataFrame(influentes).to_csv(
+        "resultados/palavras_influentes.csv",
+        index=False,
+        encoding="utf-8-sig"
+    )
+
+    print("\nAvaliação final:")
+    print("Matriz de confusão:")
+    print(matriz)
+    print("\nRelatório de classificação:")
+    print(relatorio)
+    print(f"Quantidade de erros: {len(erros)}")
+
+    return modelo
+
+
+def avaliar_casos_dificeis(modelo):
+
+    casos = pd.read_csv("data/casos_dificeis.csv")
+
+    previsoes = modelo.predict(casos["texto"])
+
+    probabilidades = modelo.predict_proba(casos["texto"])
+    indice_positivo = list(modelo.classes_).index("positivo")
+
+    resultados = pd.DataFrame({
+        "texto": casos["texto"],
+        "tipo": casos["tipo"],
+        "esperado": casos["sentimento_esperado"],
+        "previsto": previsoes,
+        "probabilidade_positivo": probabilidades[:, indice_positivo]
+    })
+
+    resultados.to_csv(
+        "resultados/casos_dificeis_predicoes.csv",
+        index=False,
+        encoding="utf-8-sig"
+    )
+
+    print("\nCasos difíceis:")
+    print(resultados[["tipo", "esperado", "previsto"]])
+
