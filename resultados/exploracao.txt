@@ -1,0 +1,20 @@
+Exploracao do dataset
+Total de avaliações: 260
+
+Distribuição dos sentimentos:
+negativo: 130.00
+positivo: 130.00
+
+Média de palavras por sentimento:
+negativo: 7.71
+positivo: 7.70
+
+Exemplos de avaliações positivas:
+Adorei o aplicativo, show
+Adorei o atendimento, nota máxima para a equipe
+Ficou lindo na sala, combinou perfeitamente com os móveis
+
+Exemplos de avaliações negativas:
+Detestei o fone, ruim, nunca mais compro
+A embalagem não é excelente
+Cheguei animado, mas me arrependi, tudo estava sujo

@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # dataset
-dados = pd.read_csv("data/Avaliacoes.csv")
+dados = pd.read_csv("data/avaliacoes.csv")
 
 # primeiras avaliações
 print("Primeiras avaliações:")
@@ -79,3 +79,35 @@ plt.ylabel("Média de palavras")
 plt.savefig("resultados/media_palavras.png")
 plt.show()
 
+with open("resultados/exploracao.txt", "w", encoding="utf-8") as arquivo:
+    arquivo.write("Exploracao do dataset\n")
+
+    # total de avaliacoes
+    arquivo.write(f"Total de avaliações: {len(dados)}\n\n")
+
+    # distribuicao dos sentimentos
+    arquivo.write("Distribuição dos sentimentos:\n")
+
+    for sentimento, quantidade in distribuicao.items():
+        arquivo.write(f"{sentimento}: {quantidade:.2f}\n")
+
+    arquivo.write("\nMédia de palavras por sentimento:\n")
+
+    for sentimento, media in media_palavras.items():
+        arquivo.write(f"{sentimento}: {media:.2f}\n")
+
+
+    # exemplos positivos
+
+    arquivo.write("\nExemplos de avaliações positivas:\n")
+
+    for _, linha in positivos.iterrows():
+        arquivo.write(f"{linha['texto']}\n")
+
+    # exemplos negativos
+    arquivo.write("\nExemplos de avaliações negativas:\n")
+
+    for _, linha in negativos.iterrows():
+        arquivo.write(f"{linha['texto']}\n")
+
+print("\nArquivo exploracao.txt salvo.")
